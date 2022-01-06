@@ -1,0 +1,6 @@
+*/Dockerfile
+*/README.md
+*/public/*
+*/node_modules/*
+*/.cache/*
+*/package-lock.json
