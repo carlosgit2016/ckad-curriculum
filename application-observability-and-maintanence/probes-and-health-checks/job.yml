@@ -1,0 +1,37 @@
+# A job example to use readnessProbe exec property
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: all-probes
+spec:
+  ttlSecondsAfterFinished: 3600
+  template:
+    spec:
+      containers:
+      - name: all-probes
+        image: alpine:3.14
+        command: ["/bin/sh"]
+        args:
+          - "-c"
+          - "mkdir -p /app/report && apk add --no-cache uuidgen && UUID=$(uuidgen) && touch /app/report/6e9ab635-303a-4ae7-bec1-0f33d1ac0501.html && ls -lha /app/report"
+        volumeMounts:
+          - mountPath: /app
+            name: report
+      - name: check-path
+        image: alpine:3.14
+        readinessProbe:
+          exec: 
+            command:
+              - "/bin/sh"
+              - "-c"
+              - "(ls /app/report/6e9ab635-303a-4ae7-bec1-0f33d1ac0501.html >> /dev/null 2>&1 && exit 0) || exit 1"
+        command: ["/bin/sh"]
+        args:
+          - "-c"
+          - "ls -lha /app"
+        volumeMounts:
+          - mountPath: /app
+            name: report
+      volumes:
+        - name: report
+      restartPolicy: Never
