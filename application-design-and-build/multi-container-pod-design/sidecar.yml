@@ -1,0 +1,48 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: sidecar-example
+  labels:
+    name: sidecar-example
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: my-app
+  namespace: sidecar-example
+spec:
+  selector:
+    matchLabels:
+      app: my-app
+  template:
+    metadata:
+      labels:
+        app: my-app
+    spec:
+      containers:
+      - name: my-app
+        image: alpine:3.14
+        command: ["/bin/sh"]
+        args: ["-c", "while true; do date >> /var/logs/app; sleep 5; done"]
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"
+        volumeMounts:
+          - mountPath: /var/logs
+            name: logs
+      - name: sidecar
+        image: sidecar-example:0.0.1
+        env:
+          - name: LOGS_PATH
+            value: /var/logs/app
+        resources: 
+          limits: 
+            memory: "64Mi"
+            cpu: "125m"
+        volumeMounts:
+          - mountPath: /var/logs
+            name: logs
+      volumes:
+        - name: logs
+
