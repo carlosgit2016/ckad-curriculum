@@ -1,0 +1,63 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: ckad-examples
+  labels:
+      name: ckad-examples
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: adapter
+spec:
+  selector:
+    matchLabels:
+      app: adapter
+  template:
+    metadata:
+      labels:
+        app: adapter
+    spec:
+      containers:
+      - name: app1
+        image: appadapterexample:0.0.1
+        env:
+          - name: LOGS_PATH
+            value: /var/logs
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"
+        volumeMounts:
+          - name: logs
+            subPath: app1
+            mountPath: /var/logs
+      - name: app2
+        image: appadapterexample:0.0.1
+        env:
+          - name: LOGS_PATH
+            value: /var/logs
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"  
+        volumeMounts:
+          - name: logs
+            subPath: app2
+            mountPath: /var/logs
+      - name: adapter
+        image: appadapter:0.0.1
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"  
+        volumeMounts:
+          - name: logs
+            mountPath: /var/logs
+        env:
+          - name: LOGS_PATH1
+            value: /var/logs/app1
+          - name: LOGS_PATH2
+            value: /var/logs/app2
+      volumes:
+        - name: logs
