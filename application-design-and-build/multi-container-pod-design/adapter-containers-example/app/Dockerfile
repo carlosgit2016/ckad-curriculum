@@ -6,4 +6,4 @@ ENV LOGS_PREFIX "[APP<number>] [WARN]"
 WORKDIR /app
 COPY main.py .
 
-ENTRYPOINT [ "python", "main.py" ]
+ENTRYPOINT [ "python", "-u", "main.py" ]

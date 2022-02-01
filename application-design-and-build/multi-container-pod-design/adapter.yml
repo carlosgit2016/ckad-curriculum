@@ -20,10 +20,14 @@ spec:
     spec:
       containers:
       - name: app1
-        image: appadapterexample:0.0.1
+        image: appadapterexample:0.0.3
         env:
           - name: LOGS_PATH
             value: /var/logs
+          - name: LOG_FILE_NAME
+            value: app1
+          - name: LOGS_PREFIX
+            value: '[APP1] [WARN]'
         resources:
           limits:
             memory: "64Mi"
@@ -33,10 +37,14 @@ spec:
             subPath: app1
             mountPath: /var/logs
       - name: app2
-        image: appadapterexample:0.0.1
+        image: appadapterexample:0.0.3
         env:
           - name: LOGS_PATH
             value: /var/logs
+          - name: LOG_FILE_NAME
+            value: app2
+          - name: LOGS_PREFIX
+            value: '[APP2] [WARN]'      
         resources:
           limits:
             memory: "64Mi"
@@ -46,7 +54,7 @@ spec:
             subPath: app2
             mountPath: /var/logs
       - name: adapter
-        image: appadapter:0.0.1
+        image: appadapter:0.0.2
         resources:
           limits:
             memory: "64Mi"
