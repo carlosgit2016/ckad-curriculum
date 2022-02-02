@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ambassor
+spec:
+  selector:
+    matchLabels:
+      app: ambassor
+  template:
+    metadata:
+      labels:
+        app: ambassor
+    spec:
+      containers:
+      - name: app
+        image: webapp:0.0.1
+        env:
+          - name: MONGODB_URL
+            value: localhost:3386
+        resources:
+          limits:
+            memory: "128Mi"
+            cpu: "500m"
+      - name: ambassor
+        image: ambassor:0.0.1
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: 125m
+        

@@ -32,7 +32,7 @@ spec:
           - mountPath: /var/logs
             name: logs
       - name: sidecar
-        image: sidecar-example:0.0.1
+        image: sidecar-example:0.0.2
         env:
           - name: LOGS_PATH
             value: /var/logs/app
