@@ -13,7 +13,7 @@ spec:
     spec:
       containers:
       - name: app
-        image: webapp:0.0.1
+        image: webapp:0.0.3
         env:
           - name: MONGODB_URL
             value: localhost:3386
@@ -21,10 +21,44 @@ spec:
           limits:
             memory: "128Mi"
             cpu: "500m"
+        ports:
+          - containerPort: 80
       - name: ambassor
-        image: ambassor:0.0.1
+        image: alpine:3.14
+        command: ["/bin/sh"]
+        args: ["-c", "sleep 3600"]
         resources:
           limits:
             memory: "64Mi"
             cpu: 125m
-        
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webservice
+spec:
+  selector:
+    app: ambassor
+  ports:
+  - port: 80
+---
+# Testing purpose only
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: default
+  name: multitool
+  labels:
+    app: multitool
+spec:
+  containers:
+  - image: praqma/network-multitool:latest
+    imagePullPolicy: IfNotPresent
+    name: network-multitool
+    resources: 
+      limits:
+        memory: 64Mi
+        cpu: 125m
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30

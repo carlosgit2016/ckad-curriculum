@@ -8,4 +8,4 @@ COPY . .
 
 RUN ["pip", "install", "-r", "requirements.txt"]
 
-ENTRYPOINT [ "gunicorn", "-b", "0.0.0.0:80", "flask_app" ]
+ENTRYPOINT [ "python", "-u", "flask_app.py" ]
