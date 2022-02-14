@@ -1,4 +1,5 @@
 from flask import Flask
+import os
 
 app = Flask(__name__)
 
@@ -11,4 +12,4 @@ def db_create():
 
 if __name__ == "__main__":
     db_create()
-    app.run(port=80, debug=False)
+    app.run(port=os.environ.get('PORT'), debug=False, host='0.0.0.0')
