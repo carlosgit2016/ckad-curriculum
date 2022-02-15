@@ -1,3 +1,14 @@
+apiVersion: v1
+kind: Secret
+metadata:
+  name: mongocredentials
+type: Opaque
+data:
+  username: cm9vdA==
+  password: aW1yb290
+  adminuser: cm9vdA==
+  adminpassword: aW1yb290
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -13,23 +24,42 @@ spec:
     spec:
       containers:
       - name: app
-        image: webapp:0.0.1
+        image: webapp:0.0.2
         env:
-          - name: MONGODB_URL
-            value: localhost:3386
+          - name: MONGO_URL
+            value: localhost:27017
+          - name: CONNECTION_STRING
+            value: mongodb://root:imroot@localhost:27017/
+          - name: MONGO_DB_USERNAME
+            valueFrom:
+              secretKeyRef: 
+                name: mongocredentials
+                key: username
+          - name: MONGO_DB_PASSWORD
+            valueFrom:
+              secretKeyRef: 
+                name: mongocredentials
+                key: password
+          - name: PORT
+            value: '8085'
         resources:
           limits:
             memory: "128Mi"
             cpu: "500m"
         ports:
-          - containerPort: 80
+          - containerPort: 8085
       - name: ambassor
-        image: alpine:3.14
-        command: ["/bin/sh"]
-        args: ["-c", "sleep 3600"]
+        image: ambassor:0.0.1
         resources:
           limits:
             memory: "64Mi"
+            cpu: 125m
+      - image: praqma/network-multitool:latest
+        imagePullPolicy: IfNotPresent
+        name: network-multitool
+        resources: 
+          limits:
+            memory: 64Mi
             cpu: 125m
 ---
 apiVersion: v1
@@ -41,7 +71,7 @@ spec:
     app: ambassor
   ports:
   - port: 80
-    targetPort: 80
+    targetPort: 8085
 ---
 # Testing purpose only
 apiVersion: v1
@@ -63,3 +93,71 @@ spec:
   dnsPolicy: ClusterFirst
   restartPolicy: Never
   terminationGracePeriodSeconds: 30
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo
+spec:
+  selector:
+    matchLabels:
+      app: mongo-db
+  template:
+    metadata:
+      labels:
+        app: mongo-db
+    spec:
+      containers:
+      - name: db
+        image: mongo:latest
+        resources:
+          limits:
+            memory: "1Gi"
+            cpu: "500m"
+        env:
+          - name: MONGO_INITDB_ROOT_USERNAME
+            valueFrom:
+              secretKeyRef: 
+                name: mongocredentials
+                key: username
+          - name: MONGO_INITDB_ROOT_PASSWORD
+            valueFrom:
+              secretKeyRef: 
+                name: mongocredentials
+                key: password
+        ports:
+        - containerPort: 27017
+      - name: explorer
+        image: mongo-express:latest
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "50m"
+        env:
+          - name: ME_CONFIG_MONGODB_ADMINUSERNAME
+            valueFrom:
+              secretKeyRef: 
+                name: mongocredentials
+                key: adminuser
+          - name: ME_CONFIG_MONGODB_ADMINPASSWORD
+            valueFrom:
+              secretKeyRef: 
+                name: mongocredentials
+                key: adminpassword
+          - name: ME_CONFIG_MONGODB_URL
+            value: mongodb://root:imroot@localhost:27017/
+        ports:
+          - containerPort: 8081
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongodb
+spec:
+  selector:
+    app: mongo-db
+  ports:
+  - port: 8081
+    name: explorer
+  - port: 27017
+    name: db
