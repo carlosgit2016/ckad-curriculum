@@ -1,7 +1,6 @@
 from crypt import methods
 from flask import Flask
 import os
-import pymongo
 from pymongo import MongoClient
 
 app = Flask(__name__)

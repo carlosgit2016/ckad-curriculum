@@ -1,0 +1,72 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: initapp
+spec:
+  selector:
+    matchLabels:
+      app: initapp
+  template:
+    metadata:
+      labels:
+        app: initapp
+    spec:
+      initContainers:
+        # Wait 5 seconds to App containers and nexts init containers to start
+        - name: sleeping
+          image: alpine:3.14
+          command: 
+            - "/bin/sh"
+          args: ["-c", "sleep 5"]
+        # Wait for webapp service be available
+        - name: preconfiguration
+          image: alpine:3.14
+          command:
+            - "/bin/sh"
+          args: ["-c", "until nslookup webapp.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+          resources:
+            limits:
+              memory: "32Mi"
+              cpu: "60m"
+      containers:
+      - name: appcontainer1
+        image: alpine:3.14
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"
+        ports:
+        - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp
+spec:
+  selector:
+    app: webapp
+  ports:
+  - port: 80
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+spec:
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: nginx:latest
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"
+        ports:
+        - containerPort: 80
