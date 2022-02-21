@@ -23,7 +23,7 @@ spec:
           image: alpine:3.14
           command:
             - "/bin/sh"
-          args: ["-c", "until nslookup webapp.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for myservice; sleep 2; done"]
+          args: ["-c", "until nslookup webapp.$(cat /var/run/secrets/kubernetes.io/serviceaccount/namespace).svc.cluster.local; do echo waiting for webapp; sleep 2; done"]
           resources:
             limits:
               memory: "32Mi"
@@ -31,6 +31,8 @@ spec:
       containers:
       - name: appcontainer1
         image: alpine:3.14
+        command: ["/bin/sh"]
+        args: ["-c", "sleep 3600"]
         resources:
           limits:
             memory: "64Mi"
