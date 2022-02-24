@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ephemeral-vol-example
+spec:
+  selector:
+    matchLabels:
+      app: ephemeral-vol-example
+  template:
+    metadata:
+      labels:
+        app: ephemeral-vol-example
+    spec:
+      containers:
+      - name: ephemeral-vol-example
+        image: alpine:3.14
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"
+        command:
+          - "/bin/sh"
+        args:
+          - "-c"
+          - "touch test123 /etc/logs/"
+        volumeMounts:
+          - name: logs
+            mountPath: /etc/logs
+      volumes:
+        - logs

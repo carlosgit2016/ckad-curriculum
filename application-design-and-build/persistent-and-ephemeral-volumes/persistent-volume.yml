@@ -1,0 +1,30 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: persistent-vol-example
+spec:
+  selector:
+    matchLabels:
+      app: persistent-vol-example
+  template:
+    metadata:
+      labels:
+        app: persistent-vol-example
+    spec:
+      containers:
+      - name: persistent-vol-example
+        image: alpine:3.14
+        command:
+          - "/bin/sh"
+        args:
+          - "-c"
+          - "touch test123 /etc/logs/"
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"
+        volumeMounts:
+          - name: logs
+            mountPath: /etc/logs
+      volumes:
+        - logs
