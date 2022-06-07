@@ -22,9 +22,16 @@ spec:
           - "/bin/sh"
         args:
           - "-c"
-          - "touch test123 /etc/logs/"
+          - "touch /etc/logs/test123 && sleep 3600"
         volumeMounts:
           - name: logs
             mountPath: /etc/logs
+      # Creates a Empty dir
       volumes:
-        - logs
+        # No size limit and is using the default medium of the node
+        - name: logs
+        # memory type that will use RAM memory to store data, the max limit is the sum of memory of all containers in the pod
+        - name: cache-volume
+          emptyDir: 
+            medium: Memory
+            sizeLimit: 64Mi

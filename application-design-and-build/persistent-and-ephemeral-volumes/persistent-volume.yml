@@ -18,13 +18,8 @@ spec:
           - "/bin/sh"
         args:
           - "-c"
-          - "touch test123 /etc/logs/"
+          - "touch /etc/logs/test123 && while true; do echo \"test $(date)\" >> /etc/logs/test123 && sleep 5; done"
         resources:
           limits:
             memory: "64Mi"
             cpu: "125m"
-        volumeMounts:
-          - name: logs
-            mountPath: /etc/logs
-      volumes:
-        - logs
