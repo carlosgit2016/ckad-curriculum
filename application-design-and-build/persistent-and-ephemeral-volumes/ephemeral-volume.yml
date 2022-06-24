@@ -1,7 +1,31 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: metadata
+  labels:
+    domain: vol-example
+data:
+  version: 1.0.0
+  size: 64Mi
+  limit: 128Mi
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: credentials
+  labels:
+    domain: vol-example
+data:
+  userName: bWFyaWEK
+  password: ZGVsbW9uYWNvCg==
+type: Opaque
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: ephemeral-vol-example
+  labels:
+    domain: vol-example
 spec:
   selector:
     matchLabels:
@@ -10,6 +34,7 @@ spec:
     metadata:
       labels:
         app: ephemeral-vol-example
+        domain: vol-example
     spec:
       containers:
       - name: ephemeral-vol-example
@@ -26,12 +51,105 @@ spec:
         volumeMounts:
           - name: logs
             mountPath: /etc/logs
-      # Creates a Empty dir
+          - name: cache-volume
+            mountPath: /etc/cache
+            # readOnly: true, use mount within the container to identify that is a ro or rw partition
+          - name: metadata-vol
+            mountPath: /etc/metadata
+          - name: reflection
+            mountPath: /etc/reflection
+          - name: secrets
+            mountPath: /etc/credentials
+            readOnly: true
+          - name: generic-eph
+            mountPath: /app/front
+            
       volumes:
+        # Creates a Empty dir
         # No size limit and is using the default medium of the node
         - name: logs
         # memory type that will use RAM memory to store data, the max limit is the sum of memory of all containers in the pod
         - name: cache-volume
           emptyDir: 
             medium: Memory
-            sizeLimit: 64Mi
+            sizeLimit: 64Mi # The total size that can be used by emptyDir memory type is the sum of all containers memory limitis in the pod
+        # Config Map type
+        - name: metadata-vol
+          configMap:
+            name: metadata
+        # Downard API 
+        - name: reflection
+          downwardAPI:
+            items:
+              - path: "labels"
+                fieldRef: 
+                  fieldPath: metadata.labels
+        - name: secrets
+          secret: 
+            secretName: credentials
+            optional: false
+        # Similar to a PVC, but it follow the pod lifecycle, unless the retain prop is enabled in the storage class 
+        - name: generic-eph
+          ephemeral:
+            volumeClaimTemplate:
+              metadata:
+                labels:
+                  type: frontend-volume
+              spec: 
+                accessModes: ["ReadOnlyMany"]
+                storageClassName: ""
+                resources:
+                  requests:
+                    storage: 1Gi
+                selector: 
+                  matchLabels: 
+                    release: "stable"
+                  matchExpressions:
+                    - {key: environment, operator: In, values: [dev]}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: ephemeral-vol-cache-v2
+spec:
+  selector:
+    matchLabels:
+      app: ephemeral-vol-cache-v2
+  template:
+    metadata:
+      labels:
+        app: ephemeral-vol-cache-v2
+    spec:
+      containers:
+      - name: ephemeral-vol-cache-v2-1
+        image: alpine:3.14
+        resources:
+          limits:
+            memory: 64Mi
+            cpu: 125m
+        command:
+          - '/bin/sh'
+        args:
+          - '-c'
+          - "cd /app/cache && touch test && count=0; while [ $count -lt 22369621 ]; do echo 'A' >> test && count=$((count + 1)); done"
+        volumeMounts:
+          - name: cache
+            mountPath: /app/cache
+      - name: ephemeral-vol-cache-v2-2
+        image: alpine:3.14
+        resources:
+          limits:
+            memory: 64Mi
+            cpu: 125m
+        command:
+          - '/bin/sh'
+        args:
+          - '-c'
+          - "cd /app/cache && touch test && count=0; while [ $count -lt 22369621 ]; do echo 'A' >> test && count=$((count + 1)); done"
+        volumeMounts:
+          - name: cache
+            mountPath: /app/cache      
+      volumes:
+        - name: cache
+          emptyDir:
+            medium: Memory    

@@ -1,0 +1,20 @@
+# Testing purpose only
+apiVersion: v1
+kind: Pod
+metadata:
+  namespace: default
+  name: multitool
+  labels:
+    app: multitool
+spec:
+  containers:
+  - image: praqma/network-multitool:latest
+    imagePullPolicy: IfNotPresent
+    name: network-multitool
+    resources: 
+      limits:
+        memory: 64Mi
+        cpu: 125m
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  terminationGracePeriodSeconds: 30
