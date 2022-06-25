@@ -88,7 +88,9 @@ spec:
           secret: 
             secretName: credentials
             optional: false
-        # Similar to a PVC, but it follow the pod lifecycle, unless the retain prop is enabled in the storage class 
+        # Similar to a PVC, but it follow the pod lifecycle, unless the retain prop is enabled in the storage class
+        # When deleting the pod or scaling down the replica set 
+        #  Warning  VolumeFailedDelete  43s (x2 over 3m47s)  persistentvolume-controller  error getting deleter volume plugin for volume "nfs-pv": no deletable volume plugin matched 
         - name: generic-eph
           ephemeral:
             volumeClaimTemplate:
@@ -107,6 +109,9 @@ spec:
                   matchExpressions:
                     - {key: environment, operator: In, values: [dev]}
 ---
+# Test volume cache in memory
+# Deploy a new pod with two containers populating a file till it consume all the cache available memory. total 128Mi (128MB)
+# The sum of all the containers in the pod 
 apiVersion: apps/v1
 kind: Deployment
 metadata:
