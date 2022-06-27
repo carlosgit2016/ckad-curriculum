@@ -6,6 +6,7 @@ spec:
   selector:
     matchLabels:
       app: persistent-vol-example
+  replicas: 5
   template:
     metadata:
       labels:
@@ -18,8 +19,144 @@ spec:
           - "/bin/sh"
         args:
           - "-c"
-          - "touch /etc/logs/test123 && while true; do echo \"test $(date)\" >> /etc/logs/test123 && sleep 5; done"
+          - "sleep 10000000"
         resources:
           limits:
             memory: "64Mi"
             cpu: "125m"
+        volumeMounts:
+          - name: little-share
+            mountPath: /app/share
+          - name: local-pvc
+            mountPath: /app/local-share
+          - name: nfs
+            mountPath: /app/nfs
+      volumes:
+        - name: little-share
+          persistentVolumeClaim: 
+            claimName: little-share
+        - name: local-pvc
+          persistentVolumeClaim:
+            claimName: local-pvc
+        - name: nfs
+          persistentVolumeClaim:
+            claimName: nfs-pvc
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: persistent-vol-example-v2
+spec:
+  selector:
+    matchLabels:
+      app: persistent-vol-example-v2
+  template:
+    metadata:
+      labels:
+        app: persistent-vol-example-v2
+    spec:
+      containers:
+      - name: persistent-vol-example-v2
+        image: alpine:3.14
+        command:
+          - "/bin/sh"
+        args:
+          - "-c"
+          - "sleep 10000000"
+        resources:
+          limits:
+            memory: "64Mi"
+            cpu: "125m"
+        volumeMounts:
+          - name: little-share
+            mountPath: /app/share
+          - name: local-pvc
+            mountPath: /app/local-share
+          - name: nfs
+            mountPath: /app/nfs
+      volumes:
+        - name: little-share
+          persistentVolumeClaim: 
+            claimName: little-share
+        - name: local-pvc
+          persistentVolumeClaim:
+            claimName: local-pvc
+        - name: nfs
+          persistentVolumeClaim:
+            claimName: nfs-pvc
+---
+# Host path
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: host-pv
+  labels:
+    app: hostPath
+spec:
+  capacity:
+    storage: 1Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  # kubernetes creates a pod recycler-* that is responsible to delete the volume folder rm -rf /thevolume/*
+  persistentVolumeReclaimPolicy: Recycle # For support recycling the files under the chosen folder for host 
+  hostPath:
+    path: /tmp/shared/megatron # /tmp host path to support delete policy by plugin 
+    type: DirectoryOrCreate
+---
+# PVC can be used by multiple pods but one PV support only one PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: little-share
+  labels:
+    domain: hostPath
+spec:
+  resources:
+    requests:
+      storage: 1Mi
+  volumeMode: Filesystem
+  storageClassName: "" # Necessary to find the PV with no specific class Name 
+  accessModes:
+    - ReadWriteOnce
+  selector:
+    matchLabels: 
+      app: hostPath
+---
+# Local
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: local-pv
+spec:
+  capacity:
+    storage: 5Gi
+  volumeMode: Filesystem
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Recycle # deprecated
+  storageClassName: ""
+  local:
+    path: /tmp/shared/optimus
+
+  nodeAffinity:
+    required:
+      nodeSelectorTerms:
+      - matchExpressions:
+        - key: kubernetes.io/hostname
+          operator: In
+          values:
+          - minikube
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: local-pvc
+spec:
+  resources:
+    requests:
+      storage: 500Mi
+  volumeMode: Filesystem
+  storageClassName: ""
+  accessModes:
+    - ReadWriteOnce

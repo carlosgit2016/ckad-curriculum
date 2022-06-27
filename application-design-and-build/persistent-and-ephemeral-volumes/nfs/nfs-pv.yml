@@ -21,4 +21,4 @@ spec:
     - nfsvers=4.1
   nfs:
     path: "/"
-    server: 10.104.19.238
+    server: 10.104.200.118
