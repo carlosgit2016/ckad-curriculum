@@ -1,0 +1,35 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app: randomnumber
+    environment: dev
+  name: randomnumber
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: randomnumber
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: randomnumber
+    spec:
+      containers:
+      - image: python3-minimal:0.4
+        name: randomnumber
+        env:
+          - name: PORT
+            value: '80'
+          - name: VERSION
+            value: '0.4'
+        resources:
+          requests:
+            memory: 500Mi
+            cpu: 125m
+          limits:
+            memory: 1Gi
+            cpu: 250m
+# Stress test for randomnumber/version 
+# while true; do echo "$(curl -SsL internal-randomnumber.dev.svc.cluster.local)" >> testsresults && echo "$(curl -SsL internal-randomnumber.dev.svc.cluster.local/version)" >> testsresults; done
