@@ -1,0 +1,37 @@
+# Stress test for randomnumber/version 
+# while true; do echo "$(curl -SsL internal-randomnumber.dev.svc.cluster.local)" >> testsresults && echo "$(curl -SsL internal-randomnumber.dev.svc.cluster.local/version)" >> testsresults; done
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: prod
+  labels:
+    environment: prod
+    deployment: blue
+  name: randomnumber-blue
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: randomnumber
+  strategy: {}
+  template:
+    metadata:
+      labels:
+        app: randomnumber
+    spec:
+      containers:
+      - image: randomnumberapp:0.1
+        name: randomnumber
+        env:
+          - name: PORT
+            value: '80'
+          - name: VERSION
+            value: '0.1'
+        resources:
+          requests:
+            memory: 500Mi
+            cpu: 125m
+          limits:
+            memory: 1Gi
+            cpu: 250m
