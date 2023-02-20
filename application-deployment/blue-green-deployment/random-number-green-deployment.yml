@@ -5,9 +5,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: prod
   labels:
-    environment: prod
     deployment: green
   name: randomnumber-green
 spec:
@@ -20,15 +18,28 @@ spec:
     metadata:
       labels:
         app: randomnumber
+        environment: green
     spec:
       containers:
-      - image: randomnumberapp:0.1
+      - image: randomnumberapp:0.0.2
         name: randomnumber
         env:
           - name: PORT
             value: '80'
           - name: VERSION
-            value: '0.1'
+            value: '0.0.2'
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_UID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
         resources:
           requests:
             memory: 500Mi

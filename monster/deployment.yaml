@@ -1,0 +1,21 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: deployment
+    labels:
+        environment: dev
+spec: 
+    selector:
+        matchLabels:
+            tier: backend
+    template:
+        metadata:
+            labels:
+                tier: backend
+
+        spec:
+            containers:
+                - name: container1
+                  # will perform updates based in the update strategy
+                  image: nginx:latest
+

@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2023-02-16T03:23:35Z"
+  generateName: ubuntu03-d569899bc-
+  labels:
+    app: ubuntu03
+    pod-template-hash: d569899bc
+  name: ubuntu03-d569899bc-gk4pw
+  namespace: default
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: ubuntu03-d569899bc
+    uid: e754819f-24bf-4f8b-9b54-59c8b7fed83a
+  resourceVersion: "7470"
+  uid: 4ffaa573-f8a2-4d8d-ba11-f5ec60bd8401
+spec:
+  containers:
+  - args:
+    - date -s '01JAN 2020 10:00:00'; sleep 5000
+    command:
+    - /bin/bash
+    - -c
+    image: ubuntu:latest
+    imagePullPolicy: Always
+    name: ubuntu
+    resources: {}
+    securityContext:
+      capabilities:
+        add:
+        - SYS_TIME
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-ch5v9
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: minikube
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-ch5v9
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2023-02-16T03:23:35Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2023-02-16T03:23:38Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2023-02-16T03:23:38Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2023-02-16T03:23:35Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: docker://13185b9df0372bb4ebc39003c9275bb611fd35f611daef7621e1b98cbd6ee1f0
+    image: ubuntu:latest
+    imageID: docker-pullable://ubuntu@sha256:9a0bdde4188b896a372804be2384015e90e3f84906b750c1a53539b585fbbe7f
+    lastState: {}
+    name: ubuntu
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2023-02-16T03:23:37Z"
+  hostIP: 192.168.49.2
+  phase: Running
+  podIP: 172.17.0.6
+  podIPs:
+  - ip: 172.17.0.6
+  qosClass: BestEffort
+  startTime: "2023-02-16T03:23:35Z"

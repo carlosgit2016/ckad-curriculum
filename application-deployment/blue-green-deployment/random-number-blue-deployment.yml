@@ -4,13 +4,11 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  namespace: prod
   labels:
-    environment: prod
     deployment: blue
   name: randomnumber-blue
 spec:
-  replicas: 5
+  replicas: 2
   selector:
     matchLabels:
       app: randomnumber
@@ -19,15 +17,28 @@ spec:
     metadata:
       labels:
         app: randomnumber
+        environment: blue
     spec:
       containers:
-      - image: randomnumberapp:0.1
+      - image: nginx:latest
         name: randomnumber
         env:
           - name: PORT
             value: '80'
           - name: VERSION
-            value: '0.1'
+            value: '0.0.1'
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_UID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
         resources:
           requests:
             memory: 500Mi
@@ -35,3 +46,35 @@ spec:
           limits:
             memory: 1Gi
             cpu: 250m
+      - image: ubuntu:latest
+        command:
+          - "/bin/bash"
+        args:
+          - "-c"
+          - "sleep 3600"
+        name: randomnumber2
+        env:
+          - name: PORT
+            value: '80'
+          - name: VERSION
+            value: '0.0.1'
+          - name: POD_NAME
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.name
+          - name: POD_UID
+            valueFrom:
+              fieldRef:
+                fieldPath: metadata.uid
+          - name: POD_IP
+            valueFrom:
+              fieldRef:
+                fieldPath: status.podIP
+        resources:
+          requests:
+            memory: 500Mi
+            cpu: 125m
+          limits:
+            memory: 1Gi
+            cpu: 250m
+    

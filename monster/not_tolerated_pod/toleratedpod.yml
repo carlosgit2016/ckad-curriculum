@@ -1,0 +1,17 @@
+apiVersion: v1
+kind: Pod
+metadata:
+    name: toleratedpod
+spec:
+    tolerations:
+        - key: "mode"
+          operator: "Equal"
+          value: "maintenance"
+          effect: "NoSchedule"
+    containers:
+        - name: tolerated
+          image: nginx:latest
+          env:
+              - name: "TOLERATED"
+                value: "YES"
+
