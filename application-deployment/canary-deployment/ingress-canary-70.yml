@@ -1,0 +1,19 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+    name: canary-70-ingress
+    #annotations: 
+    #    nginx.ingress.kubernetes.io/canary: "true"
+    #    nginx.ingress.kubernetes.io/canary-weight: "70"
+spec:
+    ingressClassName: nginx
+    rules:
+        - http:
+              paths:
+                - backend:
+                    service:
+                        name: canary-70-svc
+                        port:
+                            number: 80
+                  pathType: Prefix
+                  path: "/"

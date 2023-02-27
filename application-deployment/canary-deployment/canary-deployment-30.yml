@@ -1,0 +1,51 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: canary-deployment-30
+spec:
+  replicas: 5
+  selector:
+    matchLabels:
+      app: canary-30
+  template:
+    metadata:
+      name: app
+      labels:
+        app: canary-30
+    spec:
+      initContainers:
+        - name: static-init
+          image: alpine:3.16
+          command:
+            - "/bin/sh"
+            - "-c"
+          args:
+            - 'cd /app;touch index.html; echo "POD_IP $POD_IP  POD_NAME $POD_NAME" > index.html'
+          volumeMounts:
+            - name: static
+              mountPath: /app
+          env:
+            - name: POD_IP
+              valueFrom:
+                fieldRef:
+                  fieldPath: status.podIP
+            - name: POD_NAME
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.name
+      containers:
+        - name: web
+          image: nginx:latest
+          resources:
+            limits:
+              cpu: 250m
+              memory: 1Gi
+          ports:
+            - containerPort: 80
+          volumeMounts:
+            - name: static
+              mountPath: /usr/share/nginx/html
+              readOnly: true
+      volumes:
+        - name: static
+          
