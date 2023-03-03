@@ -1,0 +1,193 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  namespace: na
+  creationTimestamp: null
+  labels:
+    app: g2
+  name: g2
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: g2
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: g2
+    spec:
+      containers:
+      - image: carlosflor25/network-utils:0.0.1
+        name: network-utils
+        resources: 
+            limits:
+                cpu: 250m
+                memory: 250Mi
+        imagePullPolicy: Always
+      - image: nginx:latest
+        name: g2-web
+        ports:
+            - containerPort: 80
+        resources:
+            limits:
+                cpu: 250m
+                memory: 250Mi
+        readinessProbe:
+            httpGet:
+                path: /
+                port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+        livenessProbe:
+            httpGet:
+                path: /
+                port: 80
+            periodSeconds: 2
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ssg
+  name: ssg
+  namespace: na
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: ssg
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ssg
+    spec:
+      containers:
+      - image: carlosflor25/network-utils:0.0.1
+        name: network-utils
+        imagePullPolicy: Always
+        resources: 
+            limits:
+                cpu: 250m
+                memory: 250Mi
+      - image: nginx:latest
+        name: ssg-web
+        resources:
+            limits: 
+                cpu: 250m
+                memory: 250Mi
+        ports:
+            - containerPort: 80
+        readinessProbe:
+            httpGet:
+                path: /
+                port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+        livenessProbe:
+            httpGet:
+                path: /
+                port: 80
+            periodSeconds: 2
+               
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: karminecorp
+  name: karminecorp
+  namespace: europe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: karminecorp
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: karminecorp
+    spec:
+      containers:
+      - image: carlosflor25/network-utils:0.0.1
+        name: network-utils
+        imagePullPolicy: Always
+        resources: 
+            limits:
+                cpu: 250m
+                memory: 250Mi
+      - image: nginx:latest
+        name: karminecorp-web
+        resources:
+            limits:
+                cpu: 250m
+                memory: 250Mi
+        ports:
+            - containerPort: 80
+        readinessProbe:
+            httpGet:
+                path: /
+                port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+        livenessProbe:
+            httpGet:
+                path: /
+                port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+status: {}
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: moist
+  name: moist
+  namespace: europe
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: moist
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: moist
+    spec:
+      containers:
+      - image: carlosflor25/network-utils:0.0.1
+        name: network-utils
+        imagePullPolicy: Always
+        resources: {}
+      - image: nginx:latest
+        name: moist-web
+        resources:
+            limits:
+                cpu: 250m
+                memory: 250Mi
+        ports:
+            - containerPort: 80
+        readinessProbe:
+            httpGet:
+                path: /
+                port: 80
+            initialDelaySeconds: 2
+            periodSeconds: 2
+        livenessProbe:
+            httpGet:
+                path: /
+                port: 80
+            periodSeconds: 2
+status: {}

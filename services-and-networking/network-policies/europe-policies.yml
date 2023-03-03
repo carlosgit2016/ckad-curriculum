@@ -1,0 +1,67 @@
+# All ingress and egress denied by default
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: deny-all-default
+    namespace: europe
+spec:
+    podSelector: {}
+    policyTypes:
+        - Ingress
+
+# karminecorp only can access europe
+# karminecorp can be accessed by ssg in north_america region
+# karminecorp can be accessed by europe region as well
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: karminecorp-policies
+    namespace: europe
+spec:
+    podSelector:
+        matchLabels:
+            app: karminecorp
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                    region: north_america
+              podSelector:
+                  matchLabels:
+                      app: ssg
+            - namespaceSelector:
+                matchLabels:
+                    region: europe
+    egress:
+        - to:
+            - namespaceSelector:
+                matchLabels:
+                    region: europe
+
+# moist can be accessed by entire europe region
+# moist can't be accessed by north_america region
+# moist can only access port 80
+---
+apiVersion: networking.k8s.io/v1
+kind: NetworkPolicy
+metadata:
+    name: moist-policy
+    namespace: europe
+spec:
+    podSelector:
+        matchLabels:
+            app: moist
+    ingress:
+        - from:
+            - namespaceSelector:
+                matchLabels:
+                    region: europe
+    egress:
+        - to:
+            - namespaceSelector:
+                matchLabels:
+                    region: europe
+          ports:
+              - protocol: TCP
+                port: 443
