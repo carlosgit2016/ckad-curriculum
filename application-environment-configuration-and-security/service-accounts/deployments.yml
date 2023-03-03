@@ -1,0 +1,38 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  labels:
+    app: ssg
+  name: ssg
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: ssg
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: ssg
+    spec:
+      containers:
+      - image: nginx
+        name: nginx
+        resources:
+            limits:
+                cpu: 250m
+                memory: 250Mi
+        ports:
+            - containerPort: 80
+        imagePullPolicy: Always
+      - image: carlosflor25/network-utils:0.0.1
+        name: network-utils
+        resources:
+            limits:
+                cpu: 250m
+                memory: 250Mi
+      serviceAccountName: pods-reader
+      automountServiceAccountToken: true
+status: {}
